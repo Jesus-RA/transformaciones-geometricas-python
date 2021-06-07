@@ -10,7 +10,6 @@ class main:
         self.points = { 'x': [], 'y': [] }
         self.currentTransformationWidgets = {}
         self.penwidth = 3
-        # self.drawCanvas()
         self.addMenu()
         self.setInitialButtons()
 
@@ -20,6 +19,9 @@ class main:
     def drawCanvas(self):
         self.c = Canvas(self.master, width=400, height=300, bg=self.color_bg, highlightthickness=1, highlightbackground="black")
         self.c.grid(row = 4, column = 3)
+    
+    def hideCanvas(self):
+        self.c.grid_forget()
 
     def draw(self, x0, y0, x1, y1):
         self.c.create_line(x0, y0, x1, y1, width=self.penwidth, fill=self.color_fg, smooth=True)
@@ -38,8 +40,9 @@ class main:
             'traslation_button': Button(self.master, text = "Traslacion", command = self.traslation),
             'rotation_button': Button(self.master, text = "Rotacion", command = self.rotation),
             'scaling_button': Button(self.master, text = "Escalamiento", command = self.scaling),
-            'rotation_with_arbitrary_pivot_button': Button(self.master, text = "Rotacion con punto arbitrario"),
-            'fixed_point_scaling_button': Button(self.master, text = "Escalamiento con punto fijo")
+            'rotation_with_arbitrary_pivot_button': Button(self.master, text = "Rotacion con punto arbitrario", command = self.rotation_with_arbitrary_pivot),
+            'fixed_point_scaling_button': Button(self.master, text = "Escalamiento con punto fijo", command = self.fixed_point_scaling),
+            'new_figure_button': Button(self.master, text = "Nueva figura", command = self.newFigure)
         }
 
         self.transformationButtons["traslation_button"].grid(row = 2, column = 0)
@@ -47,10 +50,17 @@ class main:
         self.transformationButtons["scaling_button"].grid(row = 2, column = 2)
         self.transformationButtons["rotation_with_arbitrary_pivot_button"].grid(row = 3, column = 0)
         self.transformationButtons["fixed_point_scaling_button"].grid(row = 3, column = 1)
+        self.transformationButtons["new_figure_button"].grid(row = 3, column = 2)
 
     def hideTransformationButtons(self):
         for widget in self.transformationButtons.values():
             widget.grid_forget()
+
+    def newFigure(self):
+        self.clearEarlierTransformationWidgets()
+        self.hideCanvas()
+        self.hideTransformationButtons()
+        self.setInitialButtons()
 
     def traslation(self):
         self.clearEarlierTransformationWidgets()
@@ -139,8 +149,86 @@ class main:
         self.currentTransformationWidgets['apply'] = Button(self.master, text = "Aplicar transformacion", command = applyTransformation)
         self.currentTransformationWidgets['apply'].grid(row = 1, column = 2)
 
-    # def rotation_with_arbitrary_pivot(self):
+    def rotation_with_arbitrary_pivot(self):
+        self.clearEarlierTransformationWidgets()
 
+        self.currentTransformationWidgets = {
+            'xr_label': Label(self.master, text = "xr"),
+            'xr_input': Entry(self.master, width = 10),
+            'yr_label': Label(self.master, text = "yr"),
+            'yr_input': Entry(self.master, width = 10),
+            'angle_label': Label(self.master, text = "Angulo de rotacion"),
+            'angle_input': Entry(self.master, width = 10),
+        }
+         
+        self.currentTransformationWidgets['xr_label'].grid(row = 0, column = 0)
+        self.currentTransformationWidgets['xr_input'].grid(row = 1, column = 0)
+
+        self.currentTransformationWidgets['yr_label'].grid(row = 0, column = 1)
+        self.currentTransformationWidgets['yr_input'].grid(row = 1, column = 1)
+
+        self.currentTransformationWidgets['angle_label'].grid(row = 0, column = 2)
+        self.currentTransformationWidgets['angle_input'].grid(row = 1, column = 2)
+
+        def applyTransformation():
+            xr = int(self.currentTransformationWidgets['xr_input'].get())
+            yr = int(self.currentTransformationWidgets['yr_input'].get())
+            angle = int(self.currentTransformationWidgets['angle_input'].get())
+            
+            for i in range(self.totalPoints):
+                x = self.points['x'][i]
+                y = self.points['y'][i]
+                [rx, ry] = rotation_with_arbitrary_pivot([x, y], angle, [xr, yr])
+                self.points['x'][i] = rx
+                self.points['y'][i] = ry
+
+            self.drawFigure()
+
+        self.currentTransformationWidgets['apply'] = Button(self.master, text = "Aplicar transformacion", command = applyTransformation)
+        self.currentTransformationWidgets['apply'].grid(row = 0, column = 3)
+
+    def fixed_point_scaling(self):
+        self.clearEarlierTransformationWidgets()
+        self.currentTransformationWidgets = {
+            'sx_label': Label(self.master, text = "sx"),
+            'sx_input': Entry(self.master, width = 10),
+            'sy_label': Label(self.master, text = "sy"),
+            'sy_input': Entry(self.master, width = 10),
+            'px_label': Label(self.master, text = "px"),
+            'px_input': Entry(self.master, width = 10),
+            'py_label': Label(self.master, text = "py"),
+            'py_input': Entry(self.master, width = 10),
+        }
+         
+        self.currentTransformationWidgets['sx_label'].grid(row = 0, column = 0)
+        self.currentTransformationWidgets['sx_input'].grid(row = 1, column = 0)
+
+        self.currentTransformationWidgets['sy_label'].grid(row = 0, column = 1)
+        self.currentTransformationWidgets['sy_input'].grid(row = 1, column = 1)
+
+        self.currentTransformationWidgets['px_label'].grid(row = 0, column = 2)
+        self.currentTransformationWidgets['px_input'].grid(row = 1, column = 2)
+
+        self.currentTransformationWidgets['py_label'].grid(row = 0, column = 3)
+        self.currentTransformationWidgets['py_input'].grid(row = 1, column = 3)
+
+        def applyTransformation():
+            sx = int(self.currentTransformationWidgets['sx_input'].get())
+            sy = int(self.currentTransformationWidgets['sy_input'].get())
+            px = int(self.currentTransformationWidgets['px_input'].get())
+            py = int(self.currentTransformationWidgets['py_input'].get())
+            
+            for i in range(self.totalPoints):
+                x = self.points['x'][i]
+                y = self.points['y'][i]
+                [xs, ys] = fixed_point_scaling([x, y], [sx, sy], [px, py])
+                self.points['x'][i] = xs
+                self.points['y'][i] = ys
+
+            self.drawFigure()
+
+        self.currentTransformationWidgets['apply'] = Button(self.master, text = "Aplicar transformacion", command = applyTransformation)
+        self.currentTransformationWidgets['apply'].grid(row = 2, column = 3)
 
     def clearEarlierTransformationWidgets(self):
         for widget in self.currentTransformationWidgets.values():
@@ -206,8 +294,10 @@ class main:
             self.drawTransformationButtons()
             self.drawCanvas()
             self.drawFigure()
+            graficar.grid_forget()
 
-        Button(self.master, text = "Graficar", command = setPoints).grid(row = 1, column = 3)
+        graficar = Button(self.master, text = "Graficar", command = setPoints)
+        graficar.grid(row = 1, column = 3)
     
     def drawFigure(self):
         x_points = self.points['x']
@@ -222,40 +312,4 @@ if __name__ == '__main__':
     window.title('Transformaciones geometricas')
     window.geometry("1000x500")
 
-    def draw():
-        x = x_input.get()
-        y = y_input.get()
-        m.draw(x, y)
-
     window.mainloop()
-
-# window = Tk()
-# window.geometry("800x500")
-
-# title = Label(window, text = "Transformaciones geometricas")
-# title.grid(row = 0, column = 1)
-
-# x_label = Label(window, text = "x")
-# x_input = Entry(window, width = 10)
-# y_label = Label(window, text = "y")
-# y_input = Entry(window, width = 10)
-
-# x_label.grid(row = 1, column = 0)
-# y_label.grid(row = 1, column = 1)
-# x_input.grid(row = 2, column = 0)
-# y_input.grid(row = 2, column = 1)
-
-# # Transformation buttons
-# traslation_button = Button(window, text = "Traslacion")
-# rotation_button = Button(window, text = "Rotacion")
-# scaling_button = Button(window, text = "Escalamiento")
-# rotation_with_arbitrary_pivot_button = Button(window, text = "Rotacion con punto arbitrario")
-# fixed_point_scaling_button = Button(window, text = "Escalamiento con punto fijo")
-
-# traslation_button.grid(row = 3, column = 0)
-# rotation_button.grid(row = 3, column = 1)
-# scaling_button.grid(row = 4, column = 0)
-# rotation_with_arbitrary_pivot_button.grid(row = 4, column = 1)
-# fixed_point_scaling_button.grid(row = 5, column = 0)
-
-# window.mainloop()

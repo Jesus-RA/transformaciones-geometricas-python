@@ -19,18 +19,20 @@ def scaling(point, scaling_factor):
 
     return [x * sx, y * sy]
 
-def rotation_with_arbitrary_pivot(point, rotation_factor):
+def rotation_with_arbitrary_pivot(point, angle, pivot):
     [x, y] = point
-    [xr, yr] = rotation_factor
+    [xr, yr] = pivot
 
-    x_rotated = xr + (x - xr) * math.cos(angulo) - (y - yr) * math.sin(angulo)
-    y_rotated = yr + (x - xr) * math.sin(angulo) + (y - yr) * math.cos(angulo)
+    x_rotated = xr + (x - xr) * math.cos(angle) - (y - yr) * math.sin(angle)
+    y_rotated = yr + (x - xr) * math.sin(angle) + (y - yr) * math.cos(angle)
 
     return [x_rotated, y_rotated]
 
-def fixed_point_scaling(point, scaling_factor):
+def fixed_point_scaling(point, scaling_factor, pivot):
     [x, y] = point
-    [xf, yf] = scaling_factor
+    [sx, sy] = scaling_factor
+    [xf, yf] = pivot
+
 
     x_scaled = x * sx + xf * (1 - sx)
     y_scaled = y * sy + yf * (1 - sy)
